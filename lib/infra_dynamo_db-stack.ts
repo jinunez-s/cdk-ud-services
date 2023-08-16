@@ -4,7 +4,10 @@ import { Construct } from 'constructs';
 import * as dynamodb from 'aws-cdk-lib/aws-dynamodb'
 import * as lambda from 'aws-cdk-lib/aws-lambda'
 import { NodejsFunction } from 'aws-cdk-lib/aws-lambda-nodejs';
+import * as ec2 from 'aws-cdk-lib/aws-ec2'
+import { readFileSync } from 'fs';
 import path = require ('path')
+
 export class InfraDynamoDbStack extends cdk.Stack {
   constructor(scope: Construct, id: string, props?: cdk.StackProps) {
     super(scope, id, props);
@@ -36,6 +39,21 @@ export class InfraDynamoDbStack extends cdk.Stack {
     // const demoLambdaTwo = new NodejsFunction(this, "demoLambdaNodeJs", {
     //   entry: path.join(__dirname, '../services/', 'lambda_function.mjs')
     // })
+    
+    //EC2 Instance
+    const demoEC2 = new ec2.Instance(this, 'demoEC2LogicalID', {
+      vpc: demoVPC,
+      vpcSubnets: {subnetType: ec2.SubnetType.PUBLIC},
+      securityGroup: demoSG,
+      instanceType: ec2.InstanceType.of(ec2.InstanceClass.T2, ec2.InstanceSize.MICRO),
+      machineImage: ec2.MachineImage.latestAmazonLinux2({
+        generation: ec2.AmazonLinuxGeneration.AMAZON_LINUX_2,
+      })
+      keyName: 'demo_udemy',})
+      
+      //userData
+      const userData = readFileSync('./lib/userdata.sh', 'utf8');
+        demoEC2.addUserData(userData);
 
   }
 }
